@@ -101,6 +101,9 @@ GROUP BY
 
 3 - Contare quanti videogiochi hanno ciascuna classificazione PEGI(della classificazione PEGI vogliamo solo l'ID) (13)
 ---------------------------------------------------------------------
+    Select pegi_label_id, COUNT(*)
+    FROM pegi_labelvideogame plv
+    GROUP BY pegi_label_id;
 ---------------------------------------------------------------------
 
 4 - Mostrare il numero di videogiochi rilasciati ogni anno(11)
@@ -167,28 +170,71 @@ JOIN
 
 
 6 - Selezionare categorie e classificazioni PEGI dei videogiochi che hanno ricevuto recensioni da 4 e 5 stelle, mostrandole una sola volta(3363)
----------------------------------------------------------------------                                                                   
+---------------------------------------------------------------------       
+    SELECT UNIQUE v.name, c.name, pl.name
+    FROM videogames v
+    JOIN category_videogame cv ON v.id = cv.videogame_id
+    JOIN categories c ON cv.category_id = c.id
+    JOIN pegi_label_videogame plv ON v.id = plv.videogame_id
+    JOIN pegi_labels pl ON plv.pegi_label_id = pl.id
+    JOIN reviews r ON v.id = r.videogame_id
+    WHERE r.rating >= 4;                                                            
 ---------------------------------------------------------------------
 
 7 - Selezionare quali giochi erano presenti nei tornei nei quali hanno partecipato i giocatori il cui nome inizia per 'S'(474)
----------------------------------------------------------------------                                                              
+---------------------------------------------------------------------         
+    SELECT UNIQUE v.id, v.name
+    FROM tournaments t 
+    JOIN player_tournament pt ON t.id = pt.tournament_id
+    Join players p ON pt.player_id = p.id
+    JOIN tournament_videogame tv ON t.id = tv.tournament_id
+    JOIN videogame_id = v.id
+    WHERE p.name LIKE "s%";                                                     
 ---------------------------------------------------------------------
 
 8 - Selezionare le città in cui è stato giocato il gioco dell'anno del 2018 (36)
----------------------------------------------------------------------                                                                  
+---------------------------------------------------------------------   
+    SELECT UNIQUE t.city
+    FROM awards a
+    JOIN award_videogame av ON a.id = av.award_id 
+    JOIN videogames v ON av.videogame_id = v.id
+    JOIN tournament_videogame tv ON v.id = tv.videogame_id
+    JOIN tournament_id = t.id
+    WHERE av.'year' = 2018 AND a.name LIKE "gioco dell'anno";                                                              
 ---------------------------------------------------------------------
 
 9 - Selezionare i giocatori che hanno giocato al gioco più atteso del 2018 in un torneo del 2019(3306)
 ---------------------------------------------------------------------
+    SELECT UNIQUE t.city
+    FROM awards a
+    JOIN award_videogame av ON a.id = av.award_id 
+    JOIN videogames v ON av.videogame_id = v.id
+    JOIN tournament_videogame tv ON v.id = tv.videogame_id
+    JOIN tournament_id = t.id
+    JOIN player_tournament pt ON t.id = pt.tournament_id
+    JOIN players p ON pt.player_id = p.id
+    WHERE av.'year' = 2018 AND a.name LIKE "gioco più atteso" AND t.'year' = 2019;
 ---------------------------------------------------------------------
 
 Bonus
 10 - Selezionare i dati della prima software house che ha rilasciato un gioco, assieme ai dati del gioco stesso(software house id : 5)
 ---------------------------------------------------------------------
+    SELECT sh.*
+    FROM software_houses sh
+    JOIN videogmaes v on v.software_house_id = sh.id
+    ORDER BY v.relase_date
+    LIMIT 1;
 ---------------------------------------------------------------------
 
 11 - Selezionare i dati del videogame(id, name, release_date, totale recensioni) con più recensioni(videogame id : potrebbe uscire 449 o 398, sono entrambi a 20)
 ---------------------------------------------------------------------
+    SELECT v.*, COUNT(r.id) AS 'revCount'
+    FROM videogames v
+    JOIN reviews r ON v.id = r.videogame_id
+    GROUP BY v.id
+    ORDER BY revCount DESC
+    LIMIT 1;
+    
 ---------------------------------------------------------------------
 
 12 - Selezionare la software house che ha vinto più premi tra il 2015 e il 2016(software house id : potrebbe uscire 3 o 1, sono entrambi a 3)
